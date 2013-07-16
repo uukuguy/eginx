@@ -1,0 +1,4 @@
+egnix
+=====
+
+static nginx.
