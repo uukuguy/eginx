@@ -1,0 +1,3 @@
+[submodule "modules/flvplay"]
+	path = modules/flvplay
+	url = https://github.com/uukuguy/flvplay.git
