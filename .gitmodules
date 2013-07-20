@@ -1,3 +1,6 @@
 [submodule "modules/flvplay"]
 	path = modules/flvplay
 	url = https://github.com/uukuguy/flvplay.git
+[submodule "modules/rtmp"]
+	path = modules/rtmp
+	url = https://github.com/arut/nginx-rtmp-module.git
