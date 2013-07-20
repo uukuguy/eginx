@@ -1,7 +1,17 @@
-egnix
+Egnix
 =====
 
-static nginx.
+Nginx plugins especially for UDS.
+
+Submodules
+----------
+
+flvplay(https://github.com/uukuguy/flvplay) - Play .flv .mp4 video using UDS access interface specification.
+
+Downloaad
+---------
+
+    http://67.20.96.216/eginx-1.2.4.tar.gz
 
 Install
 -------
@@ -19,10 +29,15 @@ Install
     $ git checkout master
     $ cd ../../
 
+Run
+---
 
-Submodules
-----------
+    $ sudo eginx/bin/starteginx.sh
+    $ tail -f eginx/logs/error.log
 
-https://github.com/uukuguy/flvplay
+Stop
+----
+
+    $ sudo eginx/bin/stopeginx.sh
 
 
