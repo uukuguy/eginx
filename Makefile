@@ -9,9 +9,13 @@ PCRE_SRC=pcre-8.31
 OPENSSL_SRC=openssl-1.0.1c
 NGINX_SRC=nginx-1.2.4
 
+if [ $(OSTYPE) = "Darwin" ] ; \
+	then \
+else \
 NGX_DEPS=--with-openssl=../openssl \
 		--with-pcre=../pcre \
-		--with-zlib=../zlib 
+		--with-zlib=../zlib \
+fi
 
 NGX_MODULES=--with-http_ssl_module \
 		#--with-http_flv_module \
@@ -21,10 +25,12 @@ NGX_ADD_MODULES=--add-module=../../modules/flvplay/src/ngx_http_flvplay \
 				--add-module=../../modules/miniuds/src/ngx_http_miniuds \
 				--add-module=../../modules/rtmp
 
-CFLAGS=-I/usr/include/jsoncpp/json
+#CFLAGS=-I/usr/include/jsoncpp/json
+#JSONLIB=-ljsoncpp
+JSONLIB=-ljson
 
 all: _configure_nginx 
-	${MAKE} -C src/nginx -s
+	${MAKE} -C src/nginx 
 
 _configure_nginx: src/nginx/Makefile
 
@@ -37,7 +43,8 @@ src/nginx/Makefile:
 	then \
 	cd src/nginx && \
 	./configure --prefix=${INSTALL_ROOT}/${EGINX_SRC} \
-		--with-ld-opt="" \
+		--with-cc-opt="-I/opt/local/include" \
+		--with-ld-opt="-L/opt/local/lib -lboost_system-mt ${JSONLIB} -lstdc++.6" \
 		${NGX_DEPS} \
 		${NGX_MODULES} \
 		${NGX_ADD_MODULES} \
@@ -46,7 +53,7 @@ src/nginx/Makefile:
 	cd src/nginx && \
 	./configure --prefix=${INSTALL_ROOT}/${EGINX_SRC} \
 		--with-cc-opt="-I/usr/local/geekdev/include" \
-		--with-ld-opt="-static -L/usr/local/geekdev/lib -lcurlpp -lcurl -lldap -ljsoncpp -lboost_system -lstdc++" \
+		--with-ld-opt="-static ${JSONLIB} -lboost_system -lstdc++" \
 		${NGX_DEPS} \
 		${NGX_MODULES} \
 		${NGX_ADD_MODULES} \

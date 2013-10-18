@@ -59,10 +59,23 @@ ngx_http_miniuds_handler(ngx_http_request_t *r)
     ngx_buf_t *b;
     ngx_chain_t out;
 
+    int bGetHtml = 0;
+
+    ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "==!!== uri: %V args: %V exten: %V request_line: %V unparsed_uri: %V.", &r->uri, &r->args, &r->exten, &r->request_line, &r->unparsed_uri);
+    if (r->args.len) {
+        if ( ngx_strstrn(r->args.data, "htmlId", 5) != 0 ){
+                bGetHtml = 1;
+        }
+    }
+
     ngx_str_t relative_path;
-    ngx_str_set(&relative_path, "{\"success\":true,\"relative_path\":\"/media/spring.flv\"}");
-    /*ngx_str_set(&relative_path, "{\"success\":true,\"relative_path\":\"/media/test.mp4\"}");*/
-    /*ngx_str_set(&relative_path, "{\"success\":false,\"error_info\":\"flv relative path error. 错误信息\"}");*/
+    if ( bGetHtml == 1 ) {
+        ngx_str_set(&relative_path, "{\"success\":true,\"relative_path\":\"/media/index.html\"}");
+    } else {
+        ngx_str_set(&relative_path, "{\"success\":true,\"relative_path\":\"/media/spring.flv\"}");
+        /*ngx_str_set(&relative_path, "{\"success\":true,\"relative_path\":\"/media/test.mp4\"}");*/
+        /*ngx_str_set(&relative_path, "{\"success\":false,\"error_info\":\"flv relative path error. 错误信息\"}");*/
+    }
  
     /*ngx_http_core_loc_conf_t *elcf;*/
     /*elcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);*/
