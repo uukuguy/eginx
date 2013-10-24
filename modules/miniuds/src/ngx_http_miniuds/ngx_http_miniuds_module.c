@@ -70,7 +70,8 @@ ngx_http_miniuds_handler(ngx_http_request_t *r)
 
     ngx_str_t relative_path;
     if ( bGetHtml == 1 ) {
-        ngx_str_set(&relative_path, "{\"success\":true,\"relative_path\":\"/media/index.html\"}");
+        ngx_str_set(&relative_path, "{\"success\":true,\"relative_path\":\"/media/rrtd/enter.htm\"}");
+        /*ngx_str_set(&relative_path, "{\"success\":true,\"relative_path\":\"/media/index.html\"}");*/
     } else {
         ngx_str_set(&relative_path, "{\"success\":true,\"relative_path\":\"/media/spring.flv\"}");
         /*ngx_str_set(&relative_path, "{\"success\":true,\"relative_path\":\"/media/test.mp4\"}");*/

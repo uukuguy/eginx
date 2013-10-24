@@ -9,21 +9,31 @@ PCRE_SRC=pcre-8.31
 OPENSSL_SRC=openssl-1.0.1c
 NGINX_SRC=nginx-1.2.4
 
-if [ $(OSTYPE) = "Darwin" ] ; \
-	then \
-else \
 NGX_DEPS=--with-openssl=../openssl \
 		--with-pcre=../pcre \
 		--with-zlib=../zlib \
-fi
+
+#if [ $(OSTYPE) = "Darwin" ] ; \
+	#then \
+	#NGX_DEPS= \
+	#; \
+#else \
+#NGX_DEPS=--with-openssl=../openssl \
+		#--with-pcre=../pcre \
+		#--with-zlib=../zlib \
+		#;\
+#fi
+
 
 NGX_MODULES=--with-http_ssl_module \
-		#--with-http_flv_module \
+		--with-http_flv_module 
 		#--with-http_mp4_module 
 
-NGX_ADD_MODULES=--add-module=../../modules/flvplay/src/ngx_http_flvplay \
-				--add-module=../../modules/miniuds/src/ngx_http_miniuds \
-				--add-module=../../modules/rtmp
+NGX_ADD_MODULES=--add-module=../../modules/udsproxy/src/ngx_http_udsproxy \
+				--add-module=../../modules/miniuds/src/ngx_http_miniuds 
+				
+#--add-module=../../modules/rtmp
+#--add-module=../../modules/flvplay/src/ngx_http_flvplay 
 
 #CFLAGS=-I/usr/include/jsoncpp/json
 #JSONLIB=-ljsoncpp
@@ -52,7 +62,7 @@ src/nginx/Makefile:
 	else \
 	cd src/nginx && \
 	./configure --prefix=${INSTALL_ROOT}/${EGINX_SRC} \
-		--with-cc-opt="-I/usr/local/geekdev/include" \
+		--with-cc-opt="" \
 		--with-ld-opt="-static ${JSONLIB} -lboost_system -lstdc++" \
 		${NGX_DEPS} \
 		${NGX_MODULES} \
