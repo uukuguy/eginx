@@ -29,6 +29,20 @@ Install
     $ git checkout master
     $ cd ../../
 
+Install on windows 
+-------
+    tools:cygwin, mingw32, vs2010
+    libs:boost, json-c, curl
+    ====cgywin====
+    $ git clone https://github.com/uukuguy/eginx.git
+    $ cd eginx
+    $ git checkout master
+    $ make -f Makefile.win
+    ====mingw32====
+    $ cd src/nginx_win-1.54
+    $ sh build_win32.sh
+    ====vs2010 Command prompt====
+    $ nmake -f objs\Makefile.w32 
 Run
 ---
 
