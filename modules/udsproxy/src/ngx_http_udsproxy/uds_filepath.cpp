@@ -110,7 +110,7 @@ std::string get_uds_filepath_by_httpget(const std::string& host, int port, const
     ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query, ec_resolve);
     ip::tcp::endpoint endpoint = *endpoint_iterator;
     // -----------------------------------------------
-FX_OUTPUT_LOG_FUNC("xxx=%s://%d/%s?%s",host.c_str(),port,uri.c_str(),getargs.c_str());
+    FX_OUTPUT_LOG_FUNC("xxx=%s://%d/%s?%s",host.c_str(),port,uri.c_str(),getargs.c_str());
     //ip::address addr = ip::address::from_string("127.0.0.1");
     //ip::tcp::endpoint endpoint(addr, port);
 
