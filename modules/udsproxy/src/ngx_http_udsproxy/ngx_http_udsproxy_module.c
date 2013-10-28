@@ -95,6 +95,7 @@ ngx_http_udsproxy_handler(ngx_http_request_t *r)
     ngx_int_t                  rc;
     ngx_log_t                 *log;
     ngx_http_udsproxy_conf_t *ulcf;
+    ngx_str_t url;
 
     log = r->connection->log;
 
@@ -120,7 +121,6 @@ ngx_http_udsproxy_handler(ngx_http_request_t *r)
     ulcf = ngx_http_get_module_loc_conf(r, ngx_http_udsproxy_module);
     ngx_log_error(NGX_LOG_ERR, log, NGX_EACCES, "udsproxy local conf host: %V port: %d uri: %V", &ulcf->uds_host, ulcf->uds_port, &ulcf->uds_uri);
 
-    ngx_str_t url;
     rc = get_flv_real_path(&ulcf->uds_host, ulcf->uds_port, &ulcf->uds_uri, &r->args, &url);
     /*rc = get_uds_file_url(r, &ulcf->uds_host, ulcf->uds_port, &ulcf->uds_uri, &r->args, &url);*/
     rc =_ngx_http_303_handler(r, &url);
@@ -130,6 +130,10 @@ ngx_http_udsproxy_handler(ngx_http_request_t *r)
 /* ******************************************************************* */
 
 ngx_int_t _ngx_http_303_handler(ngx_http_request_t *r, ngx_str_t *p_path){
+
+    ngx_str_t contentType;
+    ngx_buf_t *b;
+    ngx_chain_t                out;
     ngx_log_t *log = r->connection->log;
 
     ngx_str_t path = *p_path;
@@ -138,7 +142,6 @@ ngx_int_t _ngx_http_303_handler(ngx_http_request_t *r, ngx_str_t *p_path){
     r->headers_out.status = NGX_HTTP_SEE_OTHER;
     /*r->headers_out.content_length_n = 0;*/
 
-    ngx_str_t contentType;
     ngx_str_set(&contentType, "text/html" );
     r->headers_out.content_type_len = contentType.len;
     r->headers_out.content_type = contentType;
@@ -154,7 +157,6 @@ ngx_int_t _ngx_http_303_handler(ngx_http_request_t *r, ngx_str_t *p_path){
         /*return rc;*/
     /*}*/
     
-    ngx_buf_t *b;
     b = ngx_pcalloc(r->pool, sizeof(ngx_buf_t));
     b->file_pos = 0;
     b->file_last = 0;
@@ -163,7 +165,6 @@ ngx_int_t _ngx_http_303_handler(ngx_http_request_t *r, ngx_str_t *p_path){
     b->last_buf = 1;
     b->last_in_chain = 1;
 
-    ngx_chain_t                out;
     out.buf = b;
     out.next = NULL;
 

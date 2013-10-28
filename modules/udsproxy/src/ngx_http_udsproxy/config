@@ -4,4 +4,5 @@ NGX_ADDON_SRCS="$NGX_ADDON_SRCS \
         $ngx_addon_dir/ngx_http_udsproxy_module.c \
         $ngx_addon_dir/uds_filepath.cpp \
         $ngx_addon_dir/filepath.c \
-        "
+        $ngx_addon_dir/CService.cpp \
+        " 

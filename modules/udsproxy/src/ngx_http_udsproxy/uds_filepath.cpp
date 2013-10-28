@@ -1,20 +1,96 @@
 
-/*#include <jsoncpp/json/json.h>*/
+#ifdef _JSONCPP_
+#include <jsoncpp/json/json.h>
+#else
 #include <json/json.h>
+#endif
 
 #include <boost/asio.hpp>
-#include <netinet/in.h>
+/*#include <netinet/in.h>*/
 
 #include <cstdio>
 #include <string>
 #include <sstream>
 #include <fstream>
 #include <iostream>
-#include <syslog.h>
-
+/*#include <syslog.h>*/
+#include <stdarg.h>
+#include "CService.h"
 using namespace boost::asio;
 
+extern "C" void FX_OUTPUT_LOG_FUNC(const char* format, ...)
+{
+    va_list argList;
+    va_start(argList, format);
+    FILE* file = fopen("c:/logfile.txt", "a+");
+    if (file == NULL) return;
+    vfprintf(file, format, argList);
+    fprintf(file, "\n");
+    fclose(file);
+    va_end(argList);
+
+}
+
+
+#ifdef _CURL_
+std::string get_uds_filepath_by_curl(const std::string& host, int port, const std::string& uri, const std::string& getargs)
+{
+
+
+    //std::string filepath;
+    //int bGetHtml = 0;
+    //int npos = getargs.find("htmlId",0);
+    //if( npos >=0 )
+    //{
+    //    bGetHtml =1 ;
+    //}
+
+    //if ( bGetHtml == 1 ) {
+    //    filepath =  "{\"success\":true,\"relative_path\":\"/media/rrtd/enter.htm\"}";
+    //    /*ngx_str_set(&relative_path, "{\"success\":true,\"relative_path\":\"/media/index.html\"}");*/
+    //} else {
+    //    filepath = "{\"success\":true,\"relative_path\":\"/media/spring.flv\"}";
+    //    /*ngx_str_set(&relative_path, "{\"success\":true,\"relative_path\":\"/media/test.mp4\"}");*/
+    //    /*ngx_str_set(&relative_path, "{\"success\":false,\"error_info\":\"flv relative path error. 错误信息\"}");*/
+    //}
+    //FX_OUTPUT_LOG_FUNC("filepath=%s",filepath.c_str());
+    //return filepath;
+ 
+
+    FX_OUTPUT_LOG_FUNC("get_uds_filepath_by_curl----");
+        std::stringstream ss;
+        string strurl;
+        string strurltmp;
+        ss << "http://" << host.c_str() << ":" << port << uri.c_str() << "?" << getargs.c_str(); 
+//    	string strurl="http://10.142.51.171:7002/media/media-file-play/0/play?sysCheckNo=3452B1CFFA4080468AF1A64DF7C66255&documentid=090f1b318013f255&versionid=090f1b318013f255_0&type=nginx";
+        strurltmp = ss.str();
+        int npos = strurltmp.find("HTTP",0);
+        if( npos > 0 )
+        {
+            strurl = strurltmp.substr(0,npos);
+        }
+        else
+        {
+            strurl = strurltmp;
+        }
+        //strurl = strurl.substr(0,strurl.length() - strlen("HTTP/1.1\r\nHost"));
+        FX_OUTPUT_LOG_FUNC("url = %s",strurl.c_str());
+        Service CService;
+        int nRes = CService.HttpRequest("GET",strurl);
+        printf("nRes = %d",nRes);
+        string strbuf =	CService.m_resp_buffer;
+        string strresp = CService.m_resp_header;
+        FX_OUTPUT_LOG_FUNC("buf=%s",strbuf.c_str());
+        FX_OUTPUT_LOG_FUNC("resp=%s",strresp.c_str());
+        return  strbuf;  
+}
+#endif
+
 std::string get_uds_filepath_by_httpget(const std::string& host, int port, const std::string& uri, const std::string& getargs) {
+#ifdef _CURL_
+    return get_uds_filepath_by_curl(host, port, uri, getargs);
+#endif 
+    FX_OUTPUT_LOG_FUNC("get_uds_filepath_by_boost");
     std::string filepath;
     //std::string filepath = "{\"success\":true,\"relative_path\":\"/media/spring.flv\"}";
     //std::string filepath = "{\"success\":false,\"error_info\":\"UDS get filepath 错误信息\"}";
@@ -34,7 +110,7 @@ std::string get_uds_filepath_by_httpget(const std::string& host, int port, const
     ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query, ec_resolve);
     ip::tcp::endpoint endpoint = *endpoint_iterator;
     // -----------------------------------------------
-
+FX_OUTPUT_LOG_FUNC("xxx=%s://%d/%s?%s",host.c_str(),port,uri.c_str(),getargs.c_str());
     //ip::address addr = ip::address::from_string("127.0.0.1");
     //ip::tcp::endpoint endpoint(addr, port);
 
@@ -43,6 +119,7 @@ std::string get_uds_filepath_by_httpget(const std::string& host, int port, const
     boost::system::error_code ec;
     sock.connect(endpoint, ec);
     if ( ec ) {
+        FX_OUTPUT_LOG_FUNC("socket connect failture");
         std::cout << "Socket connect " << host << " failure!" << std::endl;
     } else {
         //boost::asio::streambuf request; 
@@ -71,6 +148,7 @@ std::string get_uds_filepath_by_httpget(const std::string& host, int port, const
         //boost::asio::write(sock, request); 
         const std::string str = ss.str();
         const char* szRequest = str.c_str(); 
+        FX_OUTPUT_LOG_FUNC("szRequest=%s",szRequest);
         size_t nRequest = str.length();
         sock.send(buffer(szRequest, nRequest));
 
@@ -83,6 +161,7 @@ std::string get_uds_filepath_by_httpget(const std::string& host, int port, const
         else
             szResponse[nResponse] = 0;
 
+        FX_OUTPUT_LOG_FUNC("szResponse=%s",szResponse);
         filepath = szResponse;
 
         //std::fstream f;
@@ -259,36 +338,37 @@ extern "C" {
         char* last = NULL;
 
         std::string jsonstring = get_uds_filepath_by_httpget(host, port, uri, getargs);
-
+#ifdef _JSONCPP_
         // ---------- jsoncpp ----------
-        //Json::Value root;
-        //Json::Reader reader;
+        Json::Value root;
+        Json::Reader reader;
 
-        //bool bSuccess;
-        //std::string relative_path;
-        //std::string error_info;
+        bool bSuccess;
+        std::string relative_path;
+        std::string error_info;
 
-        //*filepath = NULL;
-
-        //bool bOK = reader.parse(jsonstring, root);
-        //if ( bOK ){
-            //bSuccess = root.get("success", false).asBool();
-            //if ( bSuccess ) {
-                //relative_path = root.get("relative_path", "").asString();
-                //size_t len = relative_path.length();
-                //*filepath = new char[len];
-                //memcpy(*filepath, relative_path.c_str(), len);
-                //last = *filepath + len;
-            //} else {
-                //error_info = root.get("error_info", "").asString();
-            //}
-        //}
+        *filepath = NULL;
+        FX_OUTPUT_LOG_FUNC("jsonstring=%s",jsonstring.c_str());
+        bool bOK = reader.parse(jsonstring, root);
+        if ( bOK ){
+            bSuccess = root.get("success", false).asBool();
+            if ( bSuccess ) {
+                relative_path = root.get("media_relative_path", "").asString();
+                size_t len = relative_path.length();
+                *filepath = new char[len];
+                memcpy(*filepath, relative_path.c_str(), len);
+                last = *filepath + len;
+            } else {
+                error_info = root.get("error_info", "").asString();
+            }
+        }
+#else
         // ---------- json-c ----------
         struct json_object *root = json_tokener_parse(jsonstring.c_str());
         if ( root != NULL ) {
             struct json_object *objSuccess = json_object_object_get(root, "success");
             if ( json_object_get_boolean(objSuccess) ) {
-                struct json_object *objRelativePath = json_object_object_get(root, "relative_path");
+                struct json_object *objRelativePath = json_object_object_get(root, "media_relative_path");
                 std::string relative_path = json_object_get_string(objRelativePath);
                 size_t len = relative_path.length();
                 *filepath = new char[len];
@@ -299,7 +379,7 @@ extern "C" {
                 std::string error_info = json_object_get_string(objErrorInfo);
             }
         }
-
+#endif
         return last;
     }
 
