@@ -5,17 +5,18 @@
 extern "C" {
 #endif
 
-    char* get_uds_filepath(const char* host, int port, const char* uri, const char* getargs, char** filepath); 
+    char* get_uds_filepath(const char* host, int port, const char* uri, const char* getargs, char** filepath, int* nRes); 
 
     int get_flv_real_path(ngx_str_t *host, int port, ngx_str_t *uri, ngx_str_t *getargs, ngx_str_t *filepath)
     {
         char* last;
-        last = get_uds_filepath((const char*)host->data, port, (const char*)uri->data, (const char*)getargs->data, (char **)&filepath->data); 
-        if ( last != NULL ){
+        int nRes = 0;
+        last = get_uds_filepath((const char*)host->data, port, (const char*)uri->data, (const char*)getargs->data, (char **)&filepath->data, &nRes ); 
+        if ( last != NULL )
+        {
             filepath->len = last - (char*)filepath->data;
-            return 1;
-        } else
-            return 0;
+        } 
+        return nRes;
     }
 
     ngx_int_t get_flv_absolue_path(ngx_http_request_t *r, ngx_str_t *host, int port, ngx_str_t *uri, ngx_str_t *getargs, ngx_str_t *ngx_rootpath, ngx_str_t *path)

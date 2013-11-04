@@ -87,7 +87,10 @@ ngx_module_t  ngx_http_udsproxy_module = {
 };
 
 ngx_int_t
+_ngx_http_Error_handler(ngx_http_request_t *r, ngx_str_t  *errInfo);
+ngx_int_t
 _ngx_http_303_handler(ngx_http_request_t *r, ngx_str_t *p_path);
+
 
 static ngx_int_t
 ngx_http_udsproxy_handler(ngx_http_request_t *r)
@@ -96,7 +99,7 @@ ngx_http_udsproxy_handler(ngx_http_request_t *r)
     ngx_log_t                 *log;
     ngx_http_udsproxy_conf_t *ulcf;
     ngx_str_t url;
-
+    int nRes;
     log = r->connection->log;
 
     ngx_log_error(NGX_LOG_ERR, log, 0, "==!!== uri: %V args: %V exten: %V request_line: %V unparsed_uri: %V.", &r->uri, &r->args, &r->exten, &r->request_line, &r->unparsed_uri);
@@ -121,9 +124,16 @@ ngx_http_udsproxy_handler(ngx_http_request_t *r)
     ulcf = ngx_http_get_module_loc_conf(r, ngx_http_udsproxy_module);
     ngx_log_error(NGX_LOG_ERR, log, NGX_EACCES, "udsproxy local conf host: %V port: %d uri: %V", &ulcf->uds_host, ulcf->uds_port, &ulcf->uds_uri);
 
-    rc = get_flv_real_path(&ulcf->uds_host, ulcf->uds_port, &ulcf->uds_uri, &r->args, &url);
+    nRes = get_flv_real_path(&ulcf->uds_host, ulcf->uds_port, &ulcf->uds_uri, &r->args, &url);
     /*rc = get_uds_file_url(r, &ulcf->uds_host, ulcf->uds_port, &ulcf->uds_uri, &r->args, &url);*/
-    rc =_ngx_http_303_handler(r, &url);
+    if ( nRes > 0 ) 
+    {
+        rc =_ngx_http_303_handler(r, &url);
+    }
+    else
+    {
+        rc = _ngx_http_Error_handler(r, &url);
+    }
     return rc;
 }
 
@@ -172,6 +182,57 @@ ngx_int_t _ngx_http_303_handler(ngx_http_request_t *r, ngx_str_t *p_path){
 
     /*return NGX_OK;*/
     return ngx_http_output_filter(r, &out);
+}
+
+ngx_int_t
+_ngx_http_Error_handler(ngx_http_request_t *r, ngx_str_t *errInfo)
+{
+    ngx_int_t     rc;  
+    ngx_buf_t    *b;  
+    ngx_chain_t   out;  
+
+    ngx_str_t respbody = *errInfo;
+//    ngx_str_t respbody = *errInfo;
+    if (!(r->method & (NGX_HTTP_GET|NGX_HTTP_HEAD))) {  
+        return NGX_HTTP_NOT_ALLOWED;  
+    }  
+    if (r->headers_in.if_modified_since) {  
+        return NGX_HTTP_NOT_MODIFIED;  
+    }  
+
+    r->headers_out.content_type.len = sizeof("text/html") - 1;  
+    r->headers_out.content_type.data = (u_char *) "text/html";  
+    r->headers_out.status = NGX_HTTP_OK;  
+    r->headers_out.content_length_n = respbody.len;
+    if (r->method == NGX_HTTP_HEAD) {  
+        rc = ngx_http_send_header(r);  
+
+        if (rc == NGX_ERROR || rc > NGX_OK || r->header_only) {  
+            return rc;  
+        }  
+    }  
+
+    b = ngx_pcalloc(r->pool, sizeof(ngx_buf_t));  
+    if (b == NULL) {  
+        ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "Failed to allocate response buffer.");  
+        return NGX_HTTP_INTERNAL_SERVER_ERROR;  
+    }  
+
+    out.buf = b;  
+    out.next = NULL;  
+
+
+    b->pos = respbody.data; 
+    b->last = respbody.data + respbody.len;
+
+    b->memory = 1;  
+    b->last_buf = 1;  
+    rc = ngx_http_send_header(r);  
+
+    if (rc == NGX_ERROR || rc > NGX_OK || r->header_only) {  
+        return rc;  
+    }  
+    return ngx_http_output_filter(r, &out);  
 }
 
 static void *

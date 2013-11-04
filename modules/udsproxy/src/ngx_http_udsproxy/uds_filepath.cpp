@@ -326,7 +326,7 @@ std::string get_uds_filepath_by_httpget(const std::string& host, int port, const
 
 extern "C" {
 
-    char* get_uds_filepath(const char* host, int port, const char* uri, const char* getargs, char** filepath){ 
+    char* get_uds_filepath(const char* host, int port, const char* uri, const char* getargs, char** filepath, int* nRes){ 
         //std::string jsonstring = std::string("{\"sysCheckNo\":\"") + 
         //std::string(sysCheckNo) +
         //std::string("\",\"documentId\":\"") +
@@ -359,11 +359,12 @@ extern "C" {
                 memcpy(*filepath, relative_path.c_str(), len);
                 last = *filepath + len;
             } else {
-                error_info = root.get("error_info", "").asString();
+                error_info = root.get("reason", "").asString();
             }
         }
 #else
         // ---------- json-c ----------
+        FX_OUTPUT_LOG_FUNC("parse _jsonc ");
         struct json_object *root = json_tokener_parse(jsonstring.c_str());
         if ( root != NULL ) {
             struct json_object *objSuccess = json_object_object_get(root, "success");
@@ -374,12 +375,23 @@ extern "C" {
                 *filepath = new char[len];
                 memcpy(*filepath, relative_path.c_str(), len);
                 last = *filepath + len;
+                *nRes = 1;
             } else {
-                struct json_object *objErrorInfo = json_object_object_get(root, "error_info");
-                std::string error_info = json_object_get_string(objErrorInfo);
+                struct json_object *objErrorInfo = json_object_object_get(root, "reason");
+                if( objErrorInfo )
+                {
+                    std::string error_info = json_object_get_string(objErrorInfo);
+                    size_t len = error_info.length();
+                    *filepath = new char[len];
+                    memcpy(*filepath, error_info.c_str(), len);
+                    last = *filepath + len;
+                    nRes = 0;
+                }
+
             }
         }
 #endif
+        FX_OUTPUT_LOG_FUNC("last=%s",last);
         return last;
     }
 
