@@ -41,37 +41,37 @@ LoggerModule::~LoggerModule()
 
 
 
-	void LoggerModule::Debug(const char* filename, const int fileline, const char* pFormat,... )
+void LoggerModule::Debug(const char* filename, const int fileline, const char* pFormat,... )
 {
-	DO_LOGGER(log4cplus::DEBUG_LOG_LEVEL, filename, fileline, pFormat, 1024);
-}
-	
-	//void DebugW(const char* filename, const int fileline,const wchar_t* pFormat,...  );
-
-	void LoggerModule::Error(const char* filename, const int fileline, const char* pFormat,... )
-{
-
-	DO_LOGGER(log4cplus::ERROR_LOG_LEVEL, filename, fileline, pFormat, 256);
+    DO_LOGGER(log4cplus::DEBUG_LOG_LEVEL, filename, fileline, pFormat, 1024);
 }
 
-    void LoggerModule::Fatal(const char* filename, const int fileline, const char* pFormat,... )
+//void DebugW(const char* filename, const int fileline,const wchar_t* pFormat,...  );
+
+void LoggerModule::Error(const char* filename, const int fileline, const char* pFormat,... )
 {
-	DO_LOGGER(log4cplus::FATAL_LOG_LEVEL, filename, fileline, pFormat, 256);
+
+    DO_LOGGER(log4cplus::ERROR_LOG_LEVEL, filename, fileline, pFormat, 256);
 }
 
-	void LoggerModule::Info(const char* filename, const int fileline, const char* pFormat,... )
+void LoggerModule::Fatal(const char* filename, const int fileline, const char* pFormat,... )
 {
-	DO_LOGGER(log4cplus::INFO_LOG_LEVEL, filename, fileline, pFormat, 512);
+    DO_LOGGER(log4cplus::FATAL_LOG_LEVEL, filename, fileline, pFormat, 256);
 }
 
-	void LoggerModule::Warn(const char* filename, const int fileline, const char* pFormat,... )
+void LoggerModule::Info(const char* filename, const int fileline, const char* pFormat,... )
 {
-	DO_LOGGER(log4cplus::WARN_LOG_LEVEL, filename, fileline, pFormat, 256);
+    DO_LOGGER(log4cplus::INFO_LOG_LEVEL, filename, fileline, pFormat, 512);
 }
 
-	void LoggerModule::Trace(const char* filename, const int fileline, const char* pFormat,... )
+void LoggerModule::Warn(const char* filename, const int fileline, const char* pFormat,... )
 {
-	DO_LOGGER(log4cplus::TRACE_LOG_LEVEL, filename, fileline, pFormat, 1024);
+    DO_LOGGER(log4cplus::WARN_LOG_LEVEL, filename, fileline, pFormat, 256);
+}
+
+void LoggerModule::Trace(const char* filename, const int fileline, const char* pFormat,... )
+{
+    DO_LOGGER(log4cplus::TRACE_LOG_LEVEL, filename, fileline, pFormat, 1024);
 }
 
 
@@ -80,12 +80,12 @@ LoggerModule::~LoggerModule()
 
 void LoggerModule::StartSystem( const TCHAR* properties_filename )
 {
-	if (properties_filename==NULL) return;
+    if (properties_filename==NULL) return;
 
- 	log4cplus::helpers::LogLog::getLogLog()->setInternalDebugging(false);
- 	log4cplus::PropertyConfigurator::doConfigure(properties_filename);
- 	log4cplus::Logger _logger = log4cplus::Logger::getRoot();
- 	LOG4CPLUS_INFO(_logger, "Logger System Start Finish.");
+    log4cplus::helpers::LogLog::getLogLog()->setInternalDebugging(false);
+    log4cplus::PropertyConfigurator::doConfigure(properties_filename);
+    log4cplus::Logger _logger = log4cplus::Logger::getRoot();
+    LOG4CPLUS_INFO(_logger, "Logger System Start Finish.");
 }
 
 void LoggerModule::StopSystem()
