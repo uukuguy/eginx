@@ -339,6 +339,7 @@ extern "C" {
         char* last = NULL;
 
         std::string jsonstring = get_uds_filepath_by_httpget(host, port, uri, getargs);
+        yrx_logDebug(__FILE__,__LINE__,"jsonstring=%s",jsonstring.c_str());
 #ifdef _JSONCPP_
         // ---------- jsoncpp ----------
         Json::Value root;
@@ -365,7 +366,7 @@ extern "C" {
         }
 #else
         // ---------- json-c ----------
-        yrx_logDebug(__FILE__,__LINE__,"xxxx");
+        yrx_logDebug(__FILE__,__LINE__,"a=%d,b=%s",1,"bb");
         struct json_object *root = json_tokener_parse(jsonstring.c_str());
         if ( root != NULL ) {
             struct json_object *objSuccess = json_object_object_get(root, "success");

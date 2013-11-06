@@ -19,8 +19,10 @@ static char *ngx_http_uds_uri(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 ngx_int_t  init_module(ngx_cycle_t *cycle)
 {
     u_char* p ;
+    u_char* ptmp;
+    ngx_str_t strsbin = ngx_string("sbin");
+    ngx_str_t strconf = ngx_string("conf");
     ngx_str_t logconfName = ngx_string("log4cplus.Client_properties");
-    size_t len;
     p = ngx_pnalloc(cycle->pool, NGX_MAX_PATH);
     if (p == NULL) {
         return NGX_ERROR;
@@ -30,17 +32,26 @@ ngx_int_t  init_module(ngx_cycle_t *cycle)
     n = readlink("/proc/self/exe",(char*)p,NGX_MAX_PATH);
     if (n >0 && n< NGX_MAX_PATH) 
     {
-        len = ngx_strlen(p);
-        while(1)
-        {
-            if(p[--len]=='/')
-            {
-                ++len;
-                break;
-            }
-        }
-        ngx_memcpy((u_char*)p+len, logconfName.data, logconfName.len); 
+        ptmp = (u_char*)ngx_strstr(p,strsbin.data);
         printf("p=%s\n",p);
+        ptmp = ngx_cpymem(ptmp,strconf.data, strconf.len);
+        ptmp = ngx_cpymem(ptmp,"/",1);
+        ptmp = ngx_cpymem(ptmp,logconfName.data,logconfName.len);
+        //ptmp = ngx_cpystrn(p, strconf.data, strconf.len);
+        //ptmp = ngx_cpystrn(p, logconfName.data, logconfName.len);
+        //ngx_cpystrn(p,logconfName.data,logconfName.len);
+        //len = ngx_strlen(p);
+        //while(1)
+        //{
+        //    if(p[--len]=='/')
+        //    {
+        //        ++len;
+        //        break;
+        //    }
+        //}
+        //ngx_memcpy((u_char*)p+len, logconfName.data, logconfName.len); 
+        printf("p=%s\n",p);
+        printf("ptmp=%s\n",ptmp);
     }
 
 
