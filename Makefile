@@ -38,7 +38,9 @@ NGX_ADD_MODULES=--add-module=../../modules/udsproxy/src/ngx_http_udsproxy \
 #CFLAGS=-I/usr/include/jsoncpp/json
 #JSONLIB=-ljsoncpp
 JSONLIB=-ljson
-
+LOG4CPLUS=-llog4cplus
+LOG4CPLUS_Wrapper_Folder=${PWD}/YRXCore/linux/log4cplus
+LOG4CPLUS_WrapperLIBS=-llog4cplusWrapper
 all: _configure_nginx 
 	${MAKE} -C src/nginx 
 
@@ -49,12 +51,13 @@ src/nginx/Makefile:
 	cd src && tar zxvf ${PCRE_SRC}.tar.gz
 	cd src && tar zxvf ${OPENSSL_SRC}.tar.gz
 	cd src && tar zxvf ${NGINX_SRC}.tar.gz
+	${MAKE} -C ${LOG4CPLUS_Wrapper_Folder}
 	if [ $(OSTYPE) = "Darwin" ] ; \
 	then \
 	cd src/nginx && \
 	./configure --prefix=${INSTALL_ROOT}/${EGINX_SRC} \
 		--with-cc-opt="-I/opt/local/include" \
-		--with-ld-opt="-L/opt/local/lib -lboost_system-mt ${JSONLIB} -lstdc++.6" \
+		--with-ld-opt="-L/opt/local/lib -lboost_system-mt ${JSONLIB} ${LOG4CPLUS} ${LOG4CPLUS_WrapperLIBS} -lstdc++.6" \
 		${NGX_DEPS} \
 		${NGX_MODULES} \
 		${NGX_ADD_MODULES} \
@@ -62,8 +65,8 @@ src/nginx/Makefile:
 	else \
 	cd src/nginx && \
 	./configure --prefix=${INSTALL_ROOT}/${EGINX_SRC} \
-		--with-cc-opt="" \
-		--with-ld-opt="-static ${JSONLIB} -lboost_system -lstdc++" \
+		--with-cc-opt="-I${LOG4CPLUS_Wrapper_Folder}" \
+		--with-ld-opt="-L. -L${LOG4CPLUS_Wrapper_Folder} -static -llog4cplusWrapper  ${JSONLIB} ${LOG4CPLUS}  -lboost_system -lstdc++ -lrt" \
 		${NGX_DEPS} \
 		${NGX_MODULES} \
 		${NGX_ADD_MODULES} \

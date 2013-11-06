@@ -16,6 +16,7 @@
 /*#include <syslog.h>*/
 #include <stdarg.h>
 #include "CService.h"
+#include "yrx_logmodule.h"
 using namespace boost::asio;
 
 extern "C" void FX_OUTPUT_LOG_FUNC(const char* format, ...)
@@ -364,7 +365,7 @@ extern "C" {
         }
 #else
         // ---------- json-c ----------
-        FX_OUTPUT_LOG_FUNC("parse _jsonc ");
+        yrx_logDebug(__FILE__,__LINE__,"xxxx");
         struct json_object *root = json_tokener_parse(jsonstring.c_str());
         if ( root != NULL ) {
             struct json_object *objSuccess = json_object_object_get(root, "success");

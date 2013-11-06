@@ -8,13 +8,57 @@
 #include <ngx_core.h>
 #include <ngx_http.h>
 #include "uds_filepath.h"
-
+#include "yrx_logmodule.h"
 static char *ngx_http_udsproxy(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static void *ngx_http_udsproxy_create_conf(ngx_conf_t *cf);
 static char *ngx_http_udsproxy_merge_conf(ngx_conf_t *cf, void *parent, void *child);
 static char *ngx_http_uds_host(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static char *ngx_http_uds_port(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static char *ngx_http_uds_uri(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
+
+ngx_int_t  init_module(ngx_cycle_t *cycle)
+{
+    u_char* p ;
+    ngx_str_t logconfName = ngx_string("log4cplus.Client_properties");
+    size_t len;
+    p = ngx_pnalloc(cycle->pool, NGX_MAX_PATH);
+    if (p == NULL) {
+        return NGX_ERROR;
+    }
+
+    int n ;
+    n = readlink("/proc/self/exe",(char*)p,NGX_MAX_PATH);
+    if (n >0 && n< NGX_MAX_PATH) 
+    {
+        len = ngx_strlen(p);
+        while(1)
+        {
+            if(p[--len]=='/')
+            {
+                ++len;
+                break;
+            }
+        }
+        ngx_memcpy((u_char*)p+len, logconfName.data, logconfName.len); 
+        printf("p=%s\n",p);
+    }
+
+
+
+    /*if (ngx_getcwd(p, NGX_MAX_PATH) == 0) {
+        ngx_log_stderr(ngx_errno, "[emerg]: " ngx_getcwd_n " failed");
+        return NGX_ERROR;
+    }
+
+    len = ngx_strlen(p);
+    p[len++] = '/';
+    ngx_memcpy((u_char*)p+len, logconfName.data, logconfName.len); */
+
+
+    yrx_logInitLog4cplus( (char*)p ); 
+    yrx_logInfo(__FILE__,__LINE__,"_yr_log_init");
+    return NGX_OK;
+}
 
 typedef struct {
     ngx_str_t  uds_host;
@@ -77,7 +121,7 @@ ngx_module_t  ngx_http_udsproxy_module = {
     ngx_http_udsproxy_commands,         /* module directives */
     NGX_HTTP_MODULE,               /* module type */
     NULL,                          /* init master */
-    NULL,                          /* init module */
+    &init_module,                          /* init module */
     NULL,                          /* init process */
     NULL,                          /* init thread */
     NULL,                          /* exit thread */
