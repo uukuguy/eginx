@@ -21,14 +21,14 @@ using namespace boost::asio;
 
 extern "C" void FX_OUTPUT_LOG_FUNC(const char* format, ...)
 {
-    va_list argList;
-    va_start(argList, format);
-    FILE* file = fopen("c:/logfile.txt", "a+");
-    if (file == NULL) return;
-    vfprintf(file, format, argList);
-    fprintf(file, "\n");
-    fclose(file);
-    va_end(argList);
+    //va_list argList;
+    //va_start(argList, format);
+    //FILE* file = fopen("c:/logfile.txt", "a+");
+    //if (file == NULL) return;
+    //vfprintf(file, format, argList);
+    //fprintf(file, "\n");
+    //fclose(file);
+    //va_end(argList);
 
 }
 
@@ -366,7 +366,7 @@ extern "C" {
         }
 #else
         // ---------- json-c ----------
-        yrx_logDebug(__FILE__,__LINE__,"a=%d,b=%s",1,"bb");
+        //yrx_logDebug(__FILE__,__LINE__,"a=%d,b=%s",1,"bb");
         struct json_object *root = json_tokener_parse(jsonstring.c_str());
         if ( root != NULL ) {
             struct json_object *objSuccess = json_object_object_get(root, "success");
