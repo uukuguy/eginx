@@ -2,12 +2,15 @@
 BOOST_SRC=F:/cq/boost_1_54_0_32
 #JSONCPP_SRC=../../extlib/win/jsoncpp/jsoncpp
 #JSONCPP_SRC=F:/cq/jsoncpp/jsoncpp
+LOG4CPLUS_SRC=F:/cq/YRXCore/log4cplus
+LOG4CPLUS_WRAPPER_SRC=F:/cq/YRXCore/log4cplusWrapper
 JSONC_SRC=F:/cq/jsonc
 CURL_SRC=F:/cq/curl
 #CURL_SRC=../../extlib/win/curl
 auto/configure --with-cc=cl \
     --prefix= \
-    --with-cc-opt="-D_CURL_ -DFD_SETSIZE=1024 -DBUILDING_LIBCURL -DHTTP_ONLY /Y- /EHsc -I${BOOST_SRC} -I${JSONC_SRC}/include -I${CURL_SRC}/include" \
+    --with-cc-opt="-D_CURL_ -DFD_SETSIZE=1024 -DBUILDING_LIBCURL -DHTTP_ONLY /Y- /EHsc -I${BOOST_SRC} -I${JSONC_SRC}/include -I${CURL_SRC}/include \
+    -I${LOG4CPLUS_WRAPPER_SRC}" \
     --with-pcre=../pcre-8.31 \
     --with-zlib=../zlib-1.2.7 \
     --with-openssl=../openssl-1.0.1c \
@@ -33,7 +36,11 @@ auto/configure --with-cc=cl \
                    ws2_32.lib \
                    winmm.lib \
                    wldap32.lib \
-                   Advapi32.lib" \
+                   Advapi32.lib \
+                   /LIBPATH:${LOG4CPLUS_SRC}/win/vc10_x86 \
+                   /LIBPATH:${LOG4CPLUS_WRAPPER_SRC}/win/vc10_x86/Release \
+                   log4cplusWrapper.lib \
+                   log4cplusS.lib" \
     --add-module=../../modules/udsproxy/src/ngx_http_udsproxy\
 	--add-module=../../modules/miniuds/src/ngx_http_miniuds \
 	#--add-module=../../modules/rtmp

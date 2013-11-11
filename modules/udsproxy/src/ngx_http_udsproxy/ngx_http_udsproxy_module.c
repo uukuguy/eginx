@@ -18,8 +18,10 @@ static char *ngx_http_uds_uri(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 
 ngx_int_t  init_module(ngx_cycle_t *cycle)
 {
-    u_char* p ;
-    u_char* ptmp;
+    u_char* p = NULL;
+    u_char* ptmp = NULL;
+    int n = 0;
+    char szpath[260] = {0};
     ngx_str_t strsbin = ngx_string("sbin");
     ngx_str_t strconf = ngx_string("conf");
     ngx_str_t logconfName = ngx_string("log4cplus.Client_properties");
@@ -27,8 +29,15 @@ ngx_int_t  init_module(ngx_cycle_t *cycle)
     if (p == NULL) {
         return NGX_ERROR;
     }
-
-    int n ;
+#ifdef _WIN32
+    GetModuleFileName(NULL,p, NGX_MAX_PATH);
+    ptmp = (u_char*)ngx_strstr(p, (u_char*)"nginx.exe");
+    ptmp = ngx_cpymem(ptmp,strconf.data, strconf.len);
+    ptmp = ngx_cpymem(ptmp,"\\",1);
+    ptmp = ngx_cpymem(ptmp,logconfName.data,logconfName.len);
+    //p = strrchr(szpath,'\\');
+    printf("szpath = %s\r\n",(char*)p);
+#else
     n = readlink("/proc/self/exe",(char*)p,NGX_MAX_PATH);
     if (n >0 && n< NGX_MAX_PATH) 
     {
@@ -53,7 +62,7 @@ ngx_int_t  init_module(ngx_cycle_t *cycle)
         printf("p=%s\n",p);
         printf("ptmp=%s\n",ptmp);
     }
-
+#endif
 
 
     /*if (ngx_getcwd(p, NGX_MAX_PATH) == 0) {
@@ -255,8 +264,11 @@ _ngx_http_Error_handler(ngx_http_request_t *r, ngx_str_t *errInfo)
         return NGX_HTTP_NOT_MODIFIED;  
     }  
 
-    r->headers_out.content_type.len = sizeof("text/html") - 1;  
-    r->headers_out.content_type.data = (u_char *) "text/html";  
+    r->headers_out.content_type.len = sizeof("text/html;charset=utf-8") - 1;  
+    r->headers_out.content_type.data = (u_char *) "text/html;charset=utf-8";  
+    //r->headers_out.charset.len = sizeof("utf-8")-1;
+    //r->headers_out.charset.data = (u_char*)("utf-8");
+
     r->headers_out.status = NGX_HTTP_OK;  
     r->headers_out.content_length_n = respbody.len;
     if (r->method == NGX_HTTP_HEAD) {  
