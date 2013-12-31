@@ -66,6 +66,7 @@ http {
         uds_host localhost;
         uds_port 18086;
         uds_uri /miniuds;
+        #uds_prefix http://localhost:18090;
 
         location ~ /flvplay$ {
             flvplay;
