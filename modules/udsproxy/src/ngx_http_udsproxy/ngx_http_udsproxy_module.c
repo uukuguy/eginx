@@ -15,11 +15,13 @@ static char *ngx_http_udsproxy_merge_conf(ngx_conf_t *cf, void *parent, void *ch
 static char *ngx_http_uds_host(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static char *ngx_http_uds_port(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static char *ngx_http_uds_uri(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
+static char *ngx_http_uds_prefix(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 
 typedef struct {
     ngx_str_t  uds_host;
     ngx_int_t  uds_port;
     ngx_str_t  uds_uri;
+    ngx_str_t  uds_prefix;
 } ngx_http_udsproxy_conf_t;
 
 static ngx_command_t  ngx_http_udsproxy_commands[] = {
@@ -48,6 +50,13 @@ static ngx_command_t  ngx_http_udsproxy_commands[] = {
     { ngx_string("uds_uri"),
       NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
       ngx_http_uds_uri,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      0,
+      NULL },
+
+    { ngx_string("uds_prefix"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+      ngx_http_uds_prefix,
       NGX_HTTP_LOC_CONF_OFFSET,
       0,
       NULL },
@@ -96,6 +105,7 @@ ngx_http_udsproxy_handler(ngx_http_request_t *r)
     ngx_log_t                 *log;
     ngx_http_udsproxy_conf_t *ulcf;
     ngx_str_t url;
+    ngx_str_t uri;
 
     log = r->connection->log;
 
@@ -119,10 +129,23 @@ ngx_http_udsproxy_handler(ngx_http_request_t *r)
     ulcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
 
     ulcf = ngx_http_get_module_loc_conf(r, ngx_http_udsproxy_module);
-    ngx_log_error(NGX_LOG_ERR, log, NGX_EACCES, "udsproxy local conf host: %V port: %d uri: %V", &ulcf->uds_host, ulcf->uds_port, &ulcf->uds_uri);
+    ngx_log_error(NGX_LOG_ERR, log, NGX_EACCES, "udsproxy local conf host: %V port: %d uri: %V prefix: %V", &ulcf->uds_host, ulcf->uds_port, &ulcf->uds_uri, &ulcf->uds_prefix);
 
-    rc = get_flv_real_path(&ulcf->uds_host, ulcf->uds_port, &ulcf->uds_uri, &r->args, &url);
-    /*rc = get_uds_file_url(r, &ulcf->uds_host, ulcf->uds_port, &ulcf->uds_uri, &r->args, &url);*/
+    rc = get_flv_real_path(&ulcf->uds_host, ulcf->uds_port, &ulcf->uds_uri, &r->args, &uri);
+    /*rc = get_uds_file_url(r, &ulcf->uds_host, ulcf->uds_port, &ulcf->uds_uri, &r->args, &uri);*/
+
+
+    if ( ulcf->uds_prefix.len > 0 ){
+        url.len = ulcf->uds_prefix.len + uri.len;
+        url.data = (u_char*)ngx_pnalloc(r->pool, url.len);
+        if ( url.data == NULL ) {
+            return NGX_HTTP_INTERNAL_SERVER_ERROR;
+        }
+        ngx_sprintf(url.data, "%V%V", &ulcf->uds_prefix, &uri);
+    } else {
+        url = uri;
+    }
+
     rc =_ngx_http_303_handler(r, &url);
     return rc;
 }
@@ -135,8 +158,21 @@ ngx_int_t _ngx_http_303_handler(ngx_http_request_t *r, ngx_str_t *p_path){
     ngx_buf_t *b;
     ngx_chain_t                out;
     ngx_log_t *log = r->connection->log;
-
+    /*ngx_http_udsproxy_conf_t *ulcf;*/
     ngx_str_t path = *p_path;
+
+    /*ulcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);*/
+    /*if ( ulcf->uds_prefix.len > 0 ){*/
+        /*path.len = ulcf->uds_prefix.len + p_path->len;*/
+        /*path.data = (u_char*)ngx_pnalloc(r->pool, path.len);*/
+        /*if ( path.data == NULL ) {*/
+            /*return NGX_HTTP_INTERNAL_SERVER_ERROR;*/
+        /*}*/
+        /*ngx_sprintf(path.data, "%V%V", &ulcf->uds_prefix, p_path);*/
+    /*} else {*/
+        /*path = *p_path;*/
+    /*}*/
+
     ngx_log_error(NGX_LOG_ERR, log, NGX_EACCES, "==xx== Enter   _ngx_http_303_handler(), path:%V", &path);
 
     r->headers_out.status = NGX_HTTP_SEE_OTHER;
@@ -190,6 +226,7 @@ ngx_http_udsproxy_create_conf(ngx_conf_t *cf)
      *     conf->uds_host = { 0, NULL };
      *     conf->uds_port = 0;
      *     conf->uds_uri = { 0, NULL };
+     *     conf->uds_prefix = { 0, NULL };
      */
 
     return conf;
@@ -209,6 +246,7 @@ ngx_http_udsproxy_merge_conf(ngx_conf_t *cf, void *parent, void *child)
         }
     }
     ngx_conf_merge_str_value(conf->uds_uri, prev->uds_uri, "");
+    ngx_conf_merge_str_value(conf->uds_prefix, prev->uds_prefix, "");
 
     return NGX_CONF_OK;
 }
@@ -271,6 +309,29 @@ ngx_http_uds_uri(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         ulcf->uds_uri.data = (u_char*)0;
     } else
         ulcf->uds_uri = value[1];
+    
+
+    return NGX_CONF_OK;
+}
+
+static char *
+ngx_http_uds_prefix(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+{
+    ngx_http_udsproxy_conf_t *ulcf = conf;
+
+    ngx_str_t        *value;
+
+    if (ulcf->uds_prefix.data != NULL) {
+        return "uds_prefix is duplicate";
+    }
+
+    value = cf->args->elts;
+
+    if (value[1].len == 0) {
+        ulcf->uds_prefix.len = 0;
+        ulcf->uds_prefix.data = (u_char*)0;
+    } else
+        ulcf->uds_prefix = value[1];
     
 
     return NGX_CONF_OK;

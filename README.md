@@ -3,6 +3,10 @@ Egnix
 
 Nginx plugins especially for UDS.
 
+F5 issue fix
+-------------
+Add uds_prefix into nginx.conf when use F5 proxy.
+
 Submodules
 ----------
 
