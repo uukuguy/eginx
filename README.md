@@ -58,4 +58,9 @@ Stop
 
     $ sudo eginx/bin/stopeginx.sh
 
+download Windows Source
+----
+   nginx 官网不提供nginx windows 相关源码包,下载步骤:  
+   1.官网下载对应的版本.tar.gz   
+   2.安装hg 下载到对应版本的源码包后,替换src,misc的内容就可以编译nginx windows版本   
 
