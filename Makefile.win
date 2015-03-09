@@ -7,7 +7,7 @@ export OSTYPE="`uname -s`"
 ZLIB_SRC=zlib-1.2.7
 PCRE_SRC=pcre-8.31
 OPENSSL_SRC=openssl-1.0.1c
-NGINX_SRC=nginx_win-1.54
+NGINX_SRC=nginx_win-1.6.2
 
 NGX_DEPS=--with-openssl=../openssl \
 		--with-pcre=../pcre \

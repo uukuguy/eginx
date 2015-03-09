@@ -1,9 +1,9 @@
 #BOOST_SRC=../../boost_1_54_0_32
-BOOST_SRC=F:/cq/boost_1_54_0_32
+BOOST_SRC=x:/boost_1_54_0_32
 #JSONCPP_SRC=../../extlib/win/jsoncpp/jsoncpp
 #JSONCPP_SRC=F:/cq/jsoncpp/jsoncpp
-JSONC_SRC=F:/cq/jsonc
-CURL_SRC=F:/cq/curl
+JSONC_SRC=x:/jsonc
+CURL_SRC=x:/curl
 #CURL_SRC=../../extlib/win/curl
 auto/configure --with-cc=cl \
     --prefix= \
@@ -21,6 +21,8 @@ auto/configure --with-cc=cl \
     --http-proxy-temp-path=temp/proxy_temp \
     --http-fastcgi-temp-path=temp/fastcgi_temp \
     --with-select_module --with-http_ssl_module \
+    --with-http_flv_module \
+    --with-http_mp4_module \
     --with-ipv6  \
     --with-ld-opt="/link /LIBPATH:${BOOST_SRC}\stage\lib \
                    libboost_date_time-vc100-mt-s-1_54.lib \
