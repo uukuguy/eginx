@@ -7,7 +7,7 @@
 
 #include <boost/asio.hpp>
 /*#include <netinet/in.h>*/
-
+#include <time.h>
 #include <cstdio>
 #include <string>
 #include <sstream>
@@ -22,8 +22,12 @@ extern "C" void FX_OUTPUT_LOG_FUNC(const char* format, ...)
 {
     va_list argList;
     va_start(argList, format);
-    FILE* file = fopen("c:/logfile.txt", "a+");
+    FILE* file = fopen("c:/logfile_tmp.txt", "a+");
     if (file == NULL) return;
+    time_t   lt;   /*define   a   longint   time   varible*/ 
+    lt=time(NULL);/*system   time   and   date*/ 
+    fprintf(file,ctime(&lt));
+    fprintf(file,"\n");
     vfprintf(file, format, argList);
     fprintf(file, "\n");
     fclose(file);
@@ -80,6 +84,7 @@ std::string get_uds_filepath_by_curl(const std::string& host, int port, const st
         printf("nRes = %d",nRes);
         string strbuf =	CService.m_resp_buffer;
         string strresp = CService.m_resp_header;
+        FX_OUTPUT_LOG_FUNC("nRes=%d",nRes);
         FX_OUTPUT_LOG_FUNC("buf=%s",strbuf.c_str());
         FX_OUTPUT_LOG_FUNC("resp=%s",strresp.c_str());
         return  strbuf;  
