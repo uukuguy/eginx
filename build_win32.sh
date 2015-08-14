@@ -1,5 +1,5 @@
 #BOOST_SRC=../../boost_1_54_0_32
-BOOST_SRC=x:/boost_1_54_0_32
+BOOST_SRC=x:/boost_1_54_0
 #JSONCPP_SRC=../../extlib/win/jsoncpp/jsoncpp
 #JSONCPP_SRC=F:/cq/jsoncpp/jsoncpp
 JSONC_SRC=x:/jsonc
@@ -23,6 +23,7 @@ auto/configure --with-cc=cl \
     --with-select_module --with-http_ssl_module \
     --with-http_flv_module \
     --with-http_mp4_module \
+    --with-http_stub_status_module \
     --with-ipv6  \
     --with-ld-opt="/link /LIBPATH:${BOOST_SRC}\stage\lib \
                    libboost_date_time-vc100-mt-s-1_54.lib \
