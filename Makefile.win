@@ -50,6 +50,7 @@ src/nginx/Makefile:
 	cd src && tar zxvf ${OPENSSL_SRC}.tar.gz
 	cd src && tar zxvf ${NGINX_SRC}.tar.gz
 	mkdir ./src/${NGINX_SRC}/objs/{conf,html,logs,temp/client_body_temp} -p
+	mkdir ./src/${NGINX_SRC}/objs/logs/tmp -p
 	cp conf ./src/${NGINX_SRC}/objs/ -rv
 	cp html ./src/${NGINX_SRC}/objs/ -rv
 	cp build_win32.sh ./src/${NGINX_SRC}

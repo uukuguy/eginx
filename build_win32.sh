@@ -41,4 +41,5 @@ auto/configure --with-cc=cl \
 	--add-module=../../modules/miniuds/src/ngx_http_miniuds \
 	#--add-module=../../modules/rtmp
     #--add-module=../../src/helloworld 
-sed -e 's/-WX//' objs/Makefile > objs/Makefile.w32
+sed -e 's/-WX//' objs/Makefile | \
+    sed -e 's#/EHsc#/EHa#g' > objs/Makefile.w32
