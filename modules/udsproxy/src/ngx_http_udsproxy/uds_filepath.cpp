@@ -20,12 +20,29 @@ using namespace boost::asio;
 
 extern "C" void FX_OUTPUT_LOG_FUNC(const char* format, ...)
 {
+    //ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, NGX_ECHILD, "Nginx hahah" );
     va_list argList;
     va_start(argList, format);
-    FILE* file = fopen("c:/logfile_tmp.txt", "a+");
-    if (file == NULL) return;
+    FILE* file = NULL;
+    struct tm *p;       
     time_t   lt;   /*define   a   longint   time   varible*/ 
     lt=time(NULL);/*system   time   and   date*/ 
+    p = gmtime(&lt);
+    //#ifdef NGX_WIN32
+    char szLogName[60] = {0};
+    char szLogFile[MAX_PATH] = {0};
+    char szExePath[MAX_PATH] = {0};
+    
+    GetModuleFileName(NULL,szExePath,MAX_PATH);
+    char* psPath = strrchr(szExePath,'\\');
+    if(psPath)
+        *psPath = '\0';
+
+    sprintf(szLogName,"%d-%d-%d.txt",1900+p->tm_year,1+p->tm_mon,p->tm_mday);
+    sprintf(szLogFile,"%s\\logs\\tmp\\%s",szExePath,szLogName);
+    file = fopen(szLogFile,"a+");
+    //file = fopen("c:/logfile_tmp.txt", "a+");
+    if (file == NULL) return;
     fprintf(file,ctime(&lt));
     fprintf(file,"\n");
     vfprintf(file, format, argList);
@@ -364,7 +381,7 @@ extern "C" {
                 memcpy(*filepath, relative_path.c_str(), len);
                 last = *filepath + len;
             } else {
-                error_info = root.get("error_info", "").asString();
+                error_info = root.get("reason", "").asString();
             }
         }
 #else
@@ -372,16 +389,22 @@ extern "C" {
         struct json_object *root = json_tokener_parse(jsonstring.c_str());
         if ( root != NULL ) {
             struct json_object *objSuccess = json_object_object_get(root, "success");
-            if ( json_object_get_boolean(objSuccess) ) {
-                struct json_object *objRelativePath = json_object_object_get(root, "media_relative_path");
-                std::string relative_path = json_object_get_string(objRelativePath);
-                size_t len = relative_path.length();
-                *filepath = new char[len];
-                memcpy(*filepath, relative_path.c_str(), len);
-                last = *filepath + len;
-            } else {
-                struct json_object *objErrorInfo = json_object_object_get(root, "error_info");
-                std::string error_info = json_object_get_string(objErrorInfo);
+            if( objSuccess ) {
+                if ( json_object_get_boolean(objSuccess) ) {
+                    struct json_object *objRelativePath = json_object_object_get(root, "media_relative_path");
+                    if( objRelativePath )
+                    {
+                        std::string relative_path = json_object_get_string(objRelativePath);
+                        size_t len = relative_path.length();
+                        *filepath = new char[len];
+                        memcpy(*filepath, relative_path.c_str(), len);
+                        last = *filepath + len;
+                    }
+                } else {
+                    struct json_object *objErrorInfo = json_object_object_get(root, "reason");
+                    if( objErrorInfo )
+                        std::string error_info = json_object_get_string(objErrorInfo);
+                }
             }
         }
 #endif
