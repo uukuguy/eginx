@@ -36,7 +36,8 @@ Install
 Install on windows 
 -------
     tools:cygwin, mingw32, vs2010
-    libs:boost, json-c, curl
+    libs:boost, json-c, curl  
+    需要把cygiwn的/usr/bin 增加到系统PATH目录中，因为vs2010编译时候需要perl程序  
     ====cgywin====
     $ git clone https://github.com/uukuguy/eginx.git
     $ cd eginx
