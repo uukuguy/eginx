@@ -65,3 +65,10 @@ download Windows Source
    1.官网下载对应的版本.tar.gz   
    2.安装hg 下载到对应版本的源码包后,替换src,misc的内容就可以编译nginx windows版本   
 
+Test Tools
+----
+Jmeter: http://jmeter.apache.org/download_jmeter  
+
+Docs
+----
+   Nginx 性能测试脚本及其测试结果
